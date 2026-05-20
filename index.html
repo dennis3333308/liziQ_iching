@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LiziQ 易經起卦系統</title>
+    <title>LiziQ 專業易經排盤系統</title>
     <style>
-        /* 極簡風 UI 規範 */
+        /* 專業極簡風 UI 規範 */
         :root {
-            --bg-color: #F9FAFB;
+            --bg-color: #F3F4F6;
             --card-bg: #FFFFFF;
-            --text-main: #1F2937;
+            --text-main: #111827;
             --text-muted: #6B7280;
             --border-color: #E5E7EB;
             --accent-color: #000000;
+            --highlight-bg: #F9FAFB;
         }
 
         body {
@@ -22,100 +23,192 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 40px 20px;
+            padding: 50px 20px;
             margin: 0;
             min-height: 100vh;
+            box-sizing: border-box;
         }
 
         .header { text-align: center; margin-bottom: 40px; }
-        .header h1 { font-size: 28px; font-weight: 600; margin: 0 0 10px 0; letter-spacing: 1px; }
-        .header p { color: var(--text-muted); font-size: 14px; margin: 0; }
+        .header h1 { font-size: 32px; font-weight: 700; margin: 0 0 12px 0; letter-spacing: 2px; }
+        .header p { color: var(--text-muted); font-size: 15px; margin: 0; font-weight: 300; }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
 
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            padding: 30px;
-            width: 100%;
-            max-width: 400px;
-            margin-bottom: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            padding: 40px;
         }
 
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 25px;
+        /* 輸入區佈局 */
+        .input-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 30px;
         }
 
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .input-group label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-align: center; }
+        
         input {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 18px;
             text-align: center;
             box-sizing: border-box;
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.2s ease;
+            background-color: var(--highlight-bg);
         }
-        input:focus { border-color: var(--text-main); }
+        input:focus { border-color: var(--text-main); background-color: var(--card-bg); box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
 
         button {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             background-color: var(--accent-color);
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 600;
+            letter-spacing: 1px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s ease;
         }
-        button:hover { opacity: 0.8; }
+        button:hover { opacity: 0.85; }
 
-        /* 卦象視覺化 */
-        .result-area { display: none; text-align: center; margin-top: 20px; }
-        .gua-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+        /* 結果區佈局 (雙欄) */
+        .result-area { 
+            display: none; 
+            margin-top: 20px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 40px;
+        }
         
-        .yao-container { display: flex; flex-direction: column-reverse; align-items: center; gap: 8px; margin-bottom: 20px; }
-        .yao { height: 12px; width: 100px; position: relative; border-radius: 2px; }
+        .hexagram-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .hexagram-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px;
+            background-color: var(--highlight-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .gua-badge {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .gua-title { font-size: 26px; font-weight: 700; margin-bottom: 30px; letter-spacing: 1px; }
+
+        /* 卦象繪製 */
+        .yao-container { display: flex; flex-direction: column-reverse; align-items: center; gap: 10px; width: 100%; }
+        .yao { height: 14px; width: 120px; position: relative; border-radius: 3px; }
         .yang { background-color: var(--text-main); }
         .yin { background-color: transparent; display: flex; justify-content: space-between; }
-        .yin::before, .yin::after { content: ""; width: 44%; height: 100%; background-color: var(--text-main); border-radius: 2px; }
-        .moving-yao { outline: 2px solid #D1D5DB; outline-offset: 4px; }
+        .yin::before, .yin::after { content: ""; width: 42%; height: 100%; background-color: var(--text-main); border-radius: 3px; }
+        
+        /* 動爻專業標示 */
+        .moving-indicator { position: absolute; right: -30px; top: -2px; color: #DC2626; font-size: 14px; font-weight: bold; }
+        .moving-yao { outline: 2px solid #E5E7EB; outline-offset: 6px; border-radius: 3px; }
+
+        .summary { text-align: center; margin-top: 30px; font-size: 15px; color: var(--text-muted); }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>LiziQ 易經系統</h1>
-        <p>極簡・直覺・探尋天機</p>
+        <h1>LiziQ 排盤系統</h1>
+        <p>專業數理起卦工具</p>
     </div>
 
-    <div class="card">
-        <div class="input-group">
-            <input type="number" id="num1" placeholder="輸入第一個數字 (上卦)">
-            <input type="number" id="num2" placeholder="輸入第二個數字 (下卦)">
-            <input type="number" id="num3" placeholder="輸入第三個數字 (動爻)">
-        </div>
-        <button onclick="calculateGua()">起卦分析</button>
+    <div class="container">
+        <div class="card">
+            <div class="input-row">
+                <div class="input-group">
+                    <label>上卦數 (外在)</label>
+                    <input type="number" id="num1" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>下卦數 (內在)</label>
+                    <input type="number" id="num2" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>動爻數 (變數)</label>
+                    <input type="number" id="num3" placeholder="0">
+                </div>
+            </div>
+            <button onclick="calculateGua()">解析卦象</button>
 
-        <div id="resultArea" class="result-area">
-            <div class="gua-title" id="mainGuaName"></div>
-            <div id="mainGuaVisual" class="yao-container"></div>
-            <p id="guaDesc" style="color: var(--text-muted); font-size: 14px; margin-top: 15px;"></p>
+            <div id="resultArea" class="result-area">
+                <div class="hexagram-grid">
+                    <div class="hexagram-box">
+                        <div class="gua-badge">Main Hexagram</div>
+                        <div class="gua-title" id="mainGuaName"></div>
+                        <div id="mainGuaVisual" class="yao-container"></div>
+                    </div>
+                    <div class="hexagram-box">
+                        <div class="gua-badge">Transformed</div>
+                        <div class="gua-title" id="transGuaName"></div>
+                        <div id="transGuaVisual" class="yao-container"></div>
+                    </div>
+                </div>
+                <div class="summary" id="guaDesc"></div>
+            </div>
         </div>
     </div>
 
 <script>
+    // 基礎八卦陣列 (0=陰, 1=陽)
     const bagua = [
         { name: "坤", yao: [0,0,0] }, { name: "乾", yao: [1,1,1] }, { name: "兌", yao: [1,1,0] },
         { name: "離", yao: [1,0,1] }, { name: "震", yao: [1,0,0] }, { name: "巽", yao: [0,1,1] },
         { name: "坎", yao: [0,1,0] }, { name: "艮", yao: [0,0,1] }
     ];
+
+    // 完整的 64 卦字典 (Key: 上卦名+下卦名)
+    const gua64 = {
+        "乾乾":"乾為天", "乾坤":"天地否", "乾震":"天雷無妄", "乾巽":"天風姤", "乾坎":"天水訟", "乾離":"天火同人", "乾艮":"天山遯", "乾兌":"天澤履",
+        "坤乾":"地天泰", "坤坤":"坤為地", "坤震":"地雷復", "坤巽":"地風升", "坤坎":"地水師", "坤離":"地火明夷", "坤艮":"地山謙", "坤兌":"地澤臨",
+        "震乾":"雷天大壯", "震坤":"雷地豫", "震震":"震為雷", "震巽":"雷風恆", "震坎":"雷水解", "震離":"雷火豐", "震艮":"雷山小過", "震兌":"雷澤歸妹",
+        "巽乾":"風天小畜", "巽坤":"風地觀", "巽震":"風雷益", "巽巽":"巽為風", "巽坎":"風水渙", "巽離":"風火家人", "巽艮":"風山漸", "巽兌":"風澤中孚",
+        "坎乾":"水天需", "坎坤":"水地比", "坎震":"水雷屯", "坎巽":"水風井", "坎坎":"坎為水", "坎離":"水火既濟", "坎艮":"水山蹇", "坎兌":"水澤節",
+        "離乾":"火天大有", "離坤":"火地晉", "離震":"火雷噬嗑", "離巽":"火風鼎", "離坎":"火水未濟", "離離":"離為火", "離艮":"火山旅", "離兌":"火澤睽",
+        "艮乾":"山天大畜", "艮坤":"山地剝", "艮震":"山雷頤", "艮巽":"山風蠱", "艮坎":"山水蒙", "艮離":"山火賁", "艮艮":"艮為山", "艮兌":"山澤損",
+        "兌乾":"澤天夬", "兌坤":"澤地萃", "兌震":"澤雷隨", "兌巽":"澤風大過", "兌坎":"澤水困", "兌離":"澤火革", "兌艮":"澤山咸", "兌兌":"兌為澤"
+    };
+
+    function getBaguaByYao(yaoArray) {
+        // 陣列比對函數，用來從變化的爻象反推回是哪個八卦
+        for (let i = 0; i < bagua.length; i++) {
+            if (bagua[i].yao[0] === yaoArray[0] && bagua[i].yao[1] === yaoArray[1] && bagua[i].yao[2] === yaoArray[2]) {
+                return bagua[i].name;
+            }
+        }
+        return "";
+    }
 
     function calculateGua() {
         const n1 = parseInt(document.getElementById('num1').value);
@@ -127,25 +220,55 @@
             return;
         }
 
+        // 1. 數理邏輯計算
         const upperIdx = n1 % 8;
         const lowerIdx = n2 % 8;
         const moveYao = (n3 % 6 === 0) ? 6 : (n3 % 6);
 
+        // 2. 建構本卦爻象 (下卦在前，上卦在後)
         let mainYao = [...bagua[lowerIdx].yao, ...bagua[upperIdx].yao];
+        let upperNameMain = bagua[upperIdx].name;
+        let lowerNameMain = bagua[lowerIdx].name;
         
-        renderGua("mainGuaVisual", mainYao, moveYao);
+        // 3. 建構變卦爻象 (翻轉動爻: 0變1, 1變0)
+        let transYao = [...mainYao];
+        transYao[moveYao - 1] = transYao[moveYao - 1] === 1 ? 0 : 1;
         
-        document.getElementById('mainGuaName').innerText = `本卦：${bagua[upperIdx].name}${bagua[lowerIdx].name}`;
-        document.getElementById('guaDesc').innerText = `動爻在第 ${moveYao} 爻`;
+        // 4. 解析變卦的上下卦名
+        let lowerNameTrans = getBaguaByYao(transYao.slice(0, 3));
+        let upperNameTrans = getBaguaByYao(transYao.slice(3, 6));
+
+        // 5. 從字典抓取正式 64 卦名
+        let fullNameMain = gua64[upperNameMain + lowerNameMain];
+        let fullNameTrans = gua64[upperNameTrans + lowerNameTrans];
+
+        // 6. 渲染畫面
+        renderGua("mainGuaVisual", mainYao, moveYao, true);
+        renderGua("transGuaVisual", transYao, null, false); // 變卦不需要標示動爻
+        
+        document.getElementById('mainGuaName').innerText = fullNameMain;
+        document.getElementById('transGuaName').innerText = fullNameTrans;
+        document.getElementById('guaDesc').innerText = `解析結果：本卦為「${fullNameMain}」，第 ${moveYao} 爻動，化為「${fullNameTrans}」。`;
         document.getElementById('resultArea').style.display = 'block';
     }
 
-    function renderGua(elementId, yaoArr, moveYao) {
+    function renderGua(elementId, yaoArr, moveYao, showIndicator) {
         const container = document.getElementById(elementId);
         container.innerHTML = "";
         yaoArr.forEach((y, index) => {
             const div = document.createElement('div');
-            div.className = `yao ${y === 1 ? 'yang' : 'yin'} ${index === moveYao - 1 ? 'moving-yao' : ''}`;
+            let classes = `yao ${y === 1 ? 'yang' : 'yin'}`;
+            
+            // 只有在本卦標示動爻
+            if (showIndicator && index === moveYao - 1) {
+                classes += ' moving-yao';
+                const indicator = document.createElement('span');
+                indicator.className = 'moving-indicator';
+                indicator.innerText = '✕'; // 專業解盤常用的動爻符號
+                div.appendChild(indicator);
+            }
+            
+            div.className = classes;
             container.appendChild(div);
         });
     }
